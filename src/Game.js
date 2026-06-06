@@ -11,8 +11,8 @@ export default function Game({ onExit }) {
   const gdRef = useRef(null);
 
   const [score, setScore] = useState(0);
-  const [lives, setLives] = useState(3);
-  const [level, setLevel] = useState(1);
+  const [, setLives] = useState(3);
+  const [, setLevel] = useState(1);
   const [gameOver, setGameOver] = useState(false);
   const [started, setStarted] = useState(false);
 

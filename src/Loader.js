@@ -24,7 +24,7 @@ export default function Loader({ onComplete }) {
       });
     }, 40);
     return () => clearInterval(interval);
-  }, []);
+  }, [onComplete]);
 
   return (
     <div style={{
