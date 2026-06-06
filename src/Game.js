@@ -1,5 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
 
+const btnStyle = {
+  width: '60px',
+  height: '60px',
+  background: 'rgba(0,255,255,0.15)',
+  border: '1px solid rgba(0,255,255,0.4)',
+  color: '#00ffff',
+  fontSize: '18px',
+  cursor: 'pointer',
+  borderRadius: '4px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  boxShadow: '0 0 10px rgba(0,255,255,0.2)',
+};
+
 export default function Game({ onExit }) {
   const canvasRef = useRef();
   const animRef = useRef();
@@ -11,8 +26,6 @@ export default function Game({ onExit }) {
   const gdRef = useRef(null);
 
   const [score, setScore] = useState(0);
-  const [, setLives] = useState(3);
-  const [, setLevel] = useState(1);
   const [gameOver, setGameOver] = useState(false);
   const [started, setStarted] = useState(false);
 
@@ -136,7 +149,6 @@ export default function Game({ onExit }) {
 
       if (scoreRef.current > levelRef.current * 100) {
         levelRef.current++;
-        setLevel(levelRef.current);
       }
 
       gd.bullets = gd.bullets.filter(b => b.y > -10);
@@ -148,7 +160,6 @@ export default function Game({ onExit }) {
         e.x += Math.sin(gd.frame * 0.05 + e.y * 0.01) * 0.8;
       });
 
-      // Bullet vs enemy
       for (let bi = gd.bullets.length - 1; bi >= 0; bi--) {
         const b = gd.bullets[bi];
         let hit = false;
@@ -169,14 +180,12 @@ export default function Game({ onExit }) {
         if (hit) gd.bullets.splice(bi, 1);
       }
 
-      // Player vs enemy
       for (let ei = gd.enemies.length - 1; ei >= 0; ei--) {
         const e = gd.enemies[ei];
         if (Math.sqrt((p.x - e.x) ** 2 + (p.y - e.y) ** 2) < 22) {
           gd.enemies.splice(ei, 1);
           gd.explosions.push({ x: e.x, y: e.y, frame: 0, color: '#ffffff' });
           livesRef.current--;
-          setLives(livesRef.current);
           if (livesRef.current <= 0) {
             gameOverRef.current = true;
             setGameOver(true);
@@ -188,7 +197,6 @@ export default function Game({ onExit }) {
       gd.explosions = gd.explosions.filter(ex => ex.frame < 20);
       gd.explosions.forEach(ex => ex.frame++);
 
-      // Draw
       ctx.fillStyle = '#000008';
       ctx.fillRect(0, 0, W, H);
 
@@ -227,7 +235,6 @@ export default function Game({ onExit }) {
 
       drawPlayer(p.x, p.y);
 
-      // HUD on canvas
       ctx.fillStyle = '#f0047f';
       ctx.font = '14px Orbitron, sans-serif';
       ctx.fillText(`SCORE  ${scoreRef.current}`, 30, 35);
@@ -255,8 +262,9 @@ export default function Game({ onExit }) {
     levelRef.current = 1;
     gameOverRef.current = false;
     keysRef.current = {};
-    setScore(0); setLives(3); setLevel(1);
-    setGameOver(false); setStarted(false);
+    setScore(0);
+    setGameOver(false);
+    setStarted(false);
     setTimeout(() => setStarted(true), 100);
   };
 
@@ -273,6 +281,69 @@ export default function Game({ onExit }) {
         style={{ display: 'block' }}
       />
 
+      {/* Mobile touch controls */}
+      {started && !gameOver && (
+        <div style={{
+          position: 'absolute',
+          bottom: '20px',
+          width: '100%',
+          display: 'flex',
+          justifyContent: 'space-between',
+          padding: '0 20px',
+          zIndex: 100,
+        }}>
+          {/* Movement buttons */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '60px 60px 60px',
+            gridTemplateRows: '60px 60px',
+            gap: '8px',
+          }}>
+            <div />
+            <button
+              onTouchStart={() => { keysRef.current['ArrowUp'] = true; }}
+              onTouchEnd={() => { keysRef.current['ArrowUp'] = false; }}
+              style={btnStyle}
+            >▲</button>
+            <div />
+            <button
+              onTouchStart={() => { keysRef.current['ArrowLeft'] = true; }}
+              onTouchEnd={() => { keysRef.current['ArrowLeft'] = false; }}
+              style={btnStyle}
+            >◀</button>
+            <button
+              onTouchStart={() => { keysRef.current['ArrowDown'] = true; }}
+              onTouchEnd={() => { keysRef.current['ArrowDown'] = false; }}
+              style={btnStyle}
+            >▼</button>
+            <button
+              onTouchStart={() => { keysRef.current['ArrowRight'] = true; }}
+              onTouchEnd={() => { keysRef.current['ArrowRight'] = false; }}
+              style={btnStyle}
+            >▶</button>
+          </div>
+
+          {/* Shoot button */}
+          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+            <button
+              onTouchStart={() => { keysRef.current['Space'] = true; }}
+              onTouchEnd={() => { keysRef.current['Space'] = false; }}
+              style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                background: 'rgba(240,4,127,0.3)',
+                border: '2px solid #f0047f',
+                color: '#f0047f',
+                fontSize: '28px',
+                cursor: 'pointer',
+                boxShadow: '0 0 20px rgba(240,4,127,0.5)',
+              }}
+            >🔥</button>
+          </div>
+        </div>
+      )}
+
       {/* Start screen */}
       {!started && !gameOver && (
         <div style={{
@@ -282,11 +353,11 @@ export default function Game({ onExit }) {
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', gap: '24px',
         }}>
-          <h1 style={{ color: '#f0047f', fontSize: '52px', fontFamily: 'Orbitron, sans-serif', letterSpacing: '8px', textShadow: '0 0 40px #f0047f' }}>
+          <h1 style={{ color: '#f0047f', fontSize: '48px', fontFamily: 'Orbitron, sans-serif', letterSpacing: '8px', textShadow: '0 0 40px #f0047f' }}>
             CYBER<span style={{ color: '#00ffff' }}>NEXUS</span>
           </h1>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Orbitron, sans-serif', fontSize: '12px', letterSpacing: '4px' }}>
-            ← → ↑ ↓ MOVE &nbsp;|&nbsp; SPACE SHOOT
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Orbitron, sans-serif', fontSize: '12px', letterSpacing: '4px', textAlign: 'center', padding: '0 20px' }}>
+            ARROWS / TOUCH — MOVE &nbsp;|&nbsp; SPACE / 🔥 — SHOOT
           </p>
           <button onClick={() => setStarted(true)} style={{
             background: 'transparent', border: '2px solid #f0047f',
@@ -316,7 +387,7 @@ export default function Game({ onExit }) {
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', gap: '20px',
         }}>
-          <h1 style={{ color: '#f0047f', fontSize: '56px', fontFamily: 'Orbitron, sans-serif', letterSpacing: '8px', textShadow: '0 0 40px #f0047f' }}>
+          <h1 style={{ color: '#f0047f', fontSize: '52px', fontFamily: 'Orbitron, sans-serif', letterSpacing: '8px', textShadow: '0 0 40px #f0047f' }}>
             GAME OVER
           </h1>
           <p style={{ color: '#fff', fontFamily: 'Orbitron, sans-serif', fontSize: '20px', letterSpacing: '4px' }}>
