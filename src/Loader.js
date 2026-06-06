@@ -4,25 +4,27 @@ export default function Loader({ onComplete }) {
   const [progress, setProgress] = useState(0);
   const [text, setText] = useState('INITIALIZING');
 
-  const texts = [
-    'INITIALIZING',
-    'LOADING ASSETS',
-    'BUILDING WORLD',
-    'ENTER THE NEXUS',
-  ];
-
   useEffect(() => {
+    const texts = [
+      'INITIALIZING',
+      'LOADING ASSETS',
+      'BUILDING WORLD',
+      'ENTER THE NEXUS',
+    ];
+
     const interval = setInterval(() => {
       setProgress(prev => {
-        if (prev >= 100) {
+        const next = prev + 2;
+        setText(texts[Math.floor((next / 100) * texts.length)] || texts[texts.length - 1]);
+        if (next >= 100) {
           clearInterval(interval);
           setTimeout(() => onComplete(), 500);
           return 100;
         }
-        setText(texts[Math.floor((prev / 100) * texts.length)]);
-        return prev + 2;
+        return next;
       });
     }, 40);
+
     return () => clearInterval(interval);
   }, [onComplete]);
 
@@ -39,13 +41,11 @@ export default function Loader({ onComplete }) {
       zIndex: 99999,
       gap: '40px',
     }}>
-      {/* Corner decorations */}
       <div style={{ position: 'absolute', top: '30px', left: '30px', borderTop: '2px solid #f0047f', borderLeft: '2px solid #f0047f', width: '40px', height: '40px' }} />
       <div style={{ position: 'absolute', top: '30px', right: '30px', borderTop: '2px solid #f0047f', borderRight: '2px solid #f0047f', width: '40px', height: '40px' }} />
       <div style={{ position: 'absolute', bottom: '30px', left: '30px', borderBottom: '2px solid #00ffff', borderLeft: '2px solid #00ffff', width: '40px', height: '40px' }} />
       <div style={{ position: 'absolute', bottom: '30px', right: '30px', borderBottom: '2px solid #00ffff', borderRight: '2px solid #00ffff', width: '40px', height: '40px' }} />
 
-      {/* Logo */}
       <h1 style={{
         fontFamily: 'Orbitron, sans-serif',
         fontSize: '64px',
@@ -57,7 +57,6 @@ export default function Loader({ onComplete }) {
         CYBER<span style={{ color: '#00ffff', textShadow: '0 0 40px #00ffff' }}>NEXUS</span>
       </h1>
 
-      {/* Status text */}
       <p style={{
         fontFamily: 'Orbitron, sans-serif',
         fontSize: '12px',
@@ -67,7 +66,6 @@ export default function Loader({ onComplete }) {
         {text}...
       </p>
 
-      {/* Progress bar */}
       <div style={{
         width: '300px',
         height: '2px',
@@ -84,7 +82,6 @@ export default function Loader({ onComplete }) {
         }} />
       </div>
 
-      {/* Progress number */}
       <p style={{
         fontFamily: 'Orbitron, sans-serif',
         fontSize: '11px',
